@@ -43,8 +43,10 @@ neurons.I = '0.6 + 0.2*randn()'  # random current
 # excitatory synapses
 chem_syn = Synapses(neurons, neurons, on_pre='v_post += 0.2')
 for _, row in chemical.iterrows():
-    pre = neuron_i.get(row['Neuron 1'])
-    post = neuron_i.get(row['Neuron 2'])
+    print(type(row.values[0]))
+    print(row.values[0])
+    pre = neuron_i.get(row.values[0])
+    post = neuron_i.get(row.values[0])
     if pre is not None and post is not None:
         chem_syn.connect(i=pre, j=post)
 
