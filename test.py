@@ -25,7 +25,7 @@ eqs = '''
 dv/dt = (I - v) / (10*ms) : 1
 I : 1
 '''
-#random comment to see if I can push to gh
+#random comment to see if I can push to gh dskljsf
 neurons = NeuronGroup(num_neurons, eqs, threshold='v>1', reset='v=0', method='exact')
 neurons.v = 0
 neurons.I = '0.6 + 0.2*randn()'  # random current
