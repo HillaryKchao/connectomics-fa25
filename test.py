@@ -13,7 +13,6 @@ for w in range(len(all_neurons)):
     if(all_neurons[w] not in neuron_dict):
         neuron_dict[all_neurons[w]] = len(neuron_dict)
 
-
 neuron_pairs = [(neuron_dict[neur1], neuron_dict[neur2]) for neur1, neur2 in list(zip(df['Neuron 1'], df['Neuron 2']))]
 print(f"Loaded {len(neuron_pairs)} unique neurons.")
 
@@ -75,7 +74,7 @@ for pair in chemical:
 
 # bidirectional/electrical gap junctions
 gap_syn = Synapses(neurons, neurons, model='''w : 1
-                                               dv/dt = w * (v_pre - v) : 1 (summed)''',
+                                               dv_syn/dt = w * (v_pre - v_syn) : 1 (event-driven)''',
                    method='exact')
 
 for pair in gap_junctions:
@@ -96,9 +95,12 @@ mon = StateMonitor(neurons, 'v', record=True)
 run(1*second)
 
 # plot results of first 10 neurons
+#
+neuron_dict_list = list()
 plt.figure(figsize=(12, 6))
-for i in range(min(10, num_neurons)):
-    plt.plot(mon.t/ms, mon.v[i], label=neuron_names[i])
+neuron_print_list = [neur for neur in list(neuron_dict.keys()) if neur != 'AVAR']
+for i in range(10):
+    plt.plot(mon.t/ms, mon.v[i], label = neuron_print_list[i])
 plt.xlabel('Time (ms)')
 plt.ylabel('Membrane potential (v)')
 plt.title('Neuron Activity in C. elegans Connectome (LIF Model)')
