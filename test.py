@@ -16,28 +16,16 @@ for w in range(len(all_neurons)):
 neuron_pairs = [(neuron_dict[neur1], neuron_dict[neur2]) for neur1, neur2 in list(zip(df['Neuron 1'], df['Neuron 2']))]
 print(f"Loaded {len(neuron_pairs)} unique neurons.")
 
-# assign each neuron name an index
-#neuron_i = {name: i for i, name in enumerate(neuron_names)}
-
 # split by synapse type
 chemical = []
 gap_junctions = []
-#for neur in range(len(df['Type'])):
- #   if(('EJ' in df['Type'][neur]) or ('Rp' in df['Type'][neur]) or ('S' in df['Type'][neur])):
-  #      chemical.append(df['Type'][neur])
-   # else:
-    #    gap_junctions.append(df['Type'][neur])
 
-for type_index in range(len(df['Type'])):
+for type_index in range(len(neuron_dict)):
     typ = df['Type'][type_index]
-    if(typ == "EJ" or typ == "Rp" or typ == 'S'):
-        chemical.append(neuron_pairs[type_index])
-    else:
+    if(typ == "EJ"):
         gap_junctions.append(neuron_pairs[type_index])
-
-    
-# chemical = df[(df['Type'].str.contains('EJ') or df['Type'].str.contains('Rp')) or df['Type'].str.contains('S')] #TODO fix chem vs gap synapse
-# gap_junctions = df[df['Type'].str.contains('Sp') or df['Type'].str.contains('R')]
+    elif (typ != "NMJ"):
+        chemical.append(neuron_pairs[type_index])
 
 # start brian2
 start_scope()
@@ -50,32 +38,23 @@ I : 1
 '''
 #random comment to see if I can push to gh dskljsf
 NUM_NEURONS = len(df['Type'])
-neurons = NeuronGroup(NUM_NEURONS, eqs, threshold='v>1', reset='v=0', method='exact')
+neurons = NeuronGroup(NUM_NEURONS, eqs, threshold='v>0.2', refractory=10*ms, reset='v=0', method='exact')
 neurons.v = 0
-neurons.I = '0.6 + 0.2*randn()'  # random current
+neurons.I = '0.8 + 0.2*randn()'  # random current
 
 # excitatory synapses
 chem_syn = Synapses(neurons, neurons, on_pre='v_post += 0.2')
-#for _, row in chemical.iterrows():
- #   print(type(row.values[0]))
-  #  print(row.values[0])
-   # pre = neuron_i.get(row.values[0])
-    #post = neuron_i.get(row.values[0])
-    #if pre is not None and post is not None:
-     #   chem_syn.connect(i=pre, j=post)
 
 for pair in chemical:
     pre = pair[0]
     post = pair[1]
     if pre is not None and post is not None:
         chem_syn.connect(i=pre, j=post)
+#         # gap_syn.w[b, a] = 0.05
 
-
-
-# bidirectional/electrical gap junctions
-gap_syn = Synapses(neurons, neurons, model='''w : 1
-                                               dv_syn/dt = w * (v_pre - v_syn) : 1 (event-driven)''',
-                   method='exact')
+gap_syn = Synapses(neurons, neurons, 
+                   model='w : 1',
+                   on_pre='v_post += w * (v_pre - v_post)')
 
 for pair in gap_junctions:
     a = pair[0]
@@ -83,22 +62,19 @@ for pair in gap_junctions:
     if a is not None and b is not None:
         gap_syn.connect(i=a, j=b)
         gap_syn.connect(i=b, j=a)
-        gap_syn.w[a, b] = 0.05
-        gap_syn.w[b, a] = 0.05
 
-
+gap_syn.w = 0.05  # set all weights after connecting
 
 # record neuronal activity
 mon = StateMonitor(neurons, 'v', record=True)
 
-# run sim (1 second, can change to ms)
-run(1*second)
+# run sim  for 75 ms
+run(75*ms)
 
-# plot results of first 10 neurons
-#
 neuron_dict_list = list()
 plt.figure(figsize=(12, 6))
 neuron_print_list = [neur for neur in list(neuron_dict.keys()) if neur != 'AVAR']
+
 for i in range(10):
     plt.plot(mon.t/ms, mon.v[i], label = neuron_print_list[i])
 plt.xlabel('Time (ms)')
