@@ -73,7 +73,7 @@ run(75*ms)
 
 neuron_dict_list = list()
 plt.figure(figsize=(12, 6))
-neuron_print_list = [neur for neur in list(neuron_dict.keys()) if neur != 'AVAR']
+neuron_print_list = list(neuron_dict.keys())
 
 for i in range(10):
     plt.plot(mon.t/ms, mon.v[i], label = neuron_print_list[i])
