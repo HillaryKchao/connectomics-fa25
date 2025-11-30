@@ -41,7 +41,6 @@ DT = 1.0 / FPS              # time step in seconds
 N_SEG = 40                  # number of points along the body (short, stubby worm)
 BODY_LENGTH = 1.0           # total body length (arbitrary units, stubby worm)
 WAVE_K = 0.25               # at most one gentle bend along the body
-
 BASE_AMP = 0.05             # very small amplitude (barely undulating)
 AMP_NOISE_GAIN = 0.10       # small variability
 AMP_NOISE_DECAY = 0.9997    # extremely slow drift in bending amplitude
@@ -63,7 +62,7 @@ WALL_AVOID_TIME = 1.0                 # seconds to keep steering away after a hi
 
 # Curvature dynamics (controls how smoothly the head path bends)
 CURVATURE_DECAY = 0.985                 # previous curvature persists longer
-CURVATURE_NOISE_GAIN = np.deg2rad(2.0)  # smaller random curvature fluctuations (rad/s)
+CURVATURE_NOISE_GAIN = np.deg2rad(2.0)  # smaller random curvature fluctuations
 WALL_TURN_RATE = np.deg2rad(55.0)       # target curvature magnitude when avoiding a wall (rad/s)
 
 # Container bounds (a simple box the worm lives in)
@@ -501,8 +500,7 @@ def update_brain(dt):
     teleporting in angle).
     """
     global phase, amp_noise_state, heading, wall_avoid_timer, head_pos
-    global curvature, curvature_bias
-    global network_idx
+    global curvature, curvature_bias, network_idx
 
     # 1. CPG phase advance
     phase += 2.0 * np.pi * CPG_FREQ * dt
